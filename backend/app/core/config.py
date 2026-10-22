@@ -7,7 +7,7 @@ See the project README for a full description of every variable.
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,20 +24,26 @@ class Settings(BaseSettings):
     chunk_size: int = 900
     chunk_overlap: int = 150
     retrieval_k: int = 5
+    # "local" (hash-based, no key) or "openrouter".
     embedding_provider: str = "local"
-    embedding_model: str = "text-embedding-3-small"
+    embedding_model: str = "nvidia/nemotron-3.5-embed-8b:free"
     embedding_dimensions: int = 256
+    # Send `dimensions` to the provider; disable for models without truncation.
+    embedding_send_dimensions: bool = True
+    # Send the search_query/search_document `input_type` hint; disable for
+    # endpoints that reject the field (OpenAI's own API among them).
+    embedding_input_type: bool = True
     embedding_api_base: str | None = None
     embedding_api_key: str | None = None
+    # "stub" (no key) or "openrouter".
     llm_provider: str = "stub"
-    llm_model: str = "gpt-4o-mini"
-    llm_api_base: str | None = None
+    llm_model: str = "openai/gpt-4o-mini"
     llm_api_key: str | None = None
-    openai_api_key: str | None = None
-    anthropic_api_key: str | None = None
-    gemini_api_key: str | None = None
     openrouter_api_key: str | None = None
-    azure_api_key: str | None = None
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    openrouter_site_url: str | None = None
+    openrouter_app_name: str | None = None
+    openai_api_key: str | None = None
     llm_temperature: float = 0.1
     llm_timeout_seconds: float = 60.0
     max_answer_citations: int = 3
@@ -49,6 +55,14 @@ class Settings(BaseSettings):
     chat_memory_ttl_seconds: int = 3600
     redis_url: str = "redis://localhost:6379/0"
     redis_chat_key_prefix: str = "doctongue:chat"
+
+    @field_validator("llm_provider", "embedding_provider", mode="before")
+    @classmethod
+    def _normalize_provider(cls, value: object) -> object:
+        """Lower-case and trim provider names so e.g. ``"OpenRouter"`` is accepted."""
+        if isinstance(value, str):
+            return value.strip().lower()
+        return value
 
     model_config = SettingsConfigDict(
         env_file=(
