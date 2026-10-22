@@ -124,20 +124,7 @@ Architecture diagram (SVG):
 
 ![DocTongue architecture](docs/architecture.svg)
 
-## 4) Moving to Production on Hyper-Scalers (AWS / GCP / Azure / Cloudflare)
-
-Key considerations before production rollout:
-
-- **Identity and secrets**: Use managed identity/IAM roles and secret stores (Azure Key Vault / AWS Secrets Manager) instead of static secrets in files.
-- **Storage hardening**: Move uploads and artifacts to object storage (Azure Blob / AWS S3) lifecycle policies, and backups.
-- **Vector database**: Use a managed vector store.
-- **Networking and security**: Use private networking, TLS.
-- **Observability**: Centralize logs, traces.
-- **Scalability and reliability**: Add autoscaling for API/workers, queue-based ingestion for large files.
-- **Compliance and governance**: Define data retention, residency, recovery and backup.
-
-
-## 5) RAG/LLM Approach and Decisions
+## 4) RAG/LLM Approach and Decisions
 
 | Area | Choices considered | Final choice and why |
 |---|---|---|
@@ -183,36 +170,8 @@ retrieved sources is handled separately by the citation and grounding filters in
 the retrieval path. Adding a faithfulness metric would mean a second deepeval
 metric alongside this one.
 
-## 6) Technical Decisions Taken
 
-Current simple decisions:
-
-- Next.js + FastAPI split for clear frontend/backend boundaries and independent scaling.
-- Chroma local persistence for quick local development and zero-extra infrastructure.
-- OpenRouter gateway behind a thin local wrapper, keeping models swappable without coupling business logic to a vendor SDK.
-- Guardrails + optional quality control path to improve safety and answer reliability; evaluation currently uses deepeval's `AnswerRelevancyMetric` with a lexical-overlap fallback.
-
-Engineering standards document:
-
-- [ENGINEERING_STANDARDS.md](ENGINEERING_STANDARDS.md)
-
-## 7) How Coding Agent (GitHub Copilot) Was Used
-
-GitHub Copilot was used as a coding assistant for:
-
-- scaffolding and refactoring support,
-- faster iteration on UI and backend integration,
-- generating baseline tests and improving developer throughput.
-
-All generated output was reviewed and adjusted manually before acceptance.
-
-## 8) What We'd Do Differently With More Time
-
-- Implement user authentication / authoriztaion.
-- Better citation UX (page-level and highlighted spans).
-- Cloud-native deployment templates (Azure/AWS).
-
-## 9) Screenshots and Example Video
+## 5) Screenshots and Example Video
 
 Screenshot(s):
 
@@ -222,7 +181,7 @@ Screenshot(s):
 
 If embedded playback is unsupported, open: [Demo video](assets/simplescreenrecorder-2026-07-22_15.30.13.mp4)
 
-## 10) Licence
+## 6) Licence
 
 MIT License - Use as a template for your own rag applications!
 
