@@ -51,7 +51,7 @@ class VectorStore:
         if not chunks:
             return
         documents = [chunk.content for chunk in chunks]
-        embeddings = self._embedding_service.embed_texts(documents)
+        embeddings = self._embedding_service.embed_documents(documents)
         ids = [f"{document_id}:{chunk.chunk_index}" for chunk in chunks]
         metadatas = [
             {
@@ -86,7 +86,7 @@ class VectorStore:
         """
         if self._collection.count() == 0:
             return []
-        query_embedding = self._embedding_service.embed_texts([question])[0]
+        query_embedding = self._embedding_service.embed_query(question)
         try:
             response = self._collection.query(query_embeddings=[query_embedding], n_results=limit)
         except Exception as exc:

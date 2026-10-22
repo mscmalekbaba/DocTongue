@@ -1,10 +1,10 @@
 DocTongue/
-├── .env.example
 ├── .gitignore
 ├── README.md
 ├── project-structure.txt
 ├── docker-compose.yml
 ├── backend/
+│   ├── .env.example
 │   ├── Dockerfile
 │   ├── pyproject.toml
 │   ├── app/
@@ -25,6 +25,7 @@ DocTongue/
 │   │       ├── guardrails.py
 │   │       ├── ingestion.py
 │   │       ├── llm.py
+│   │       ├── openrouter.py
 │   │       ├── quality_control.py
 │   │       ├── retrieval.py
 │   │       └── vector_store.py
@@ -37,8 +38,8 @@ DocTongue/
 │       ├── conftest.py
 │       ├── test_api.py
 │       ├── test_chunking.py
-│       ├── test_live_litellm_smoke.py
-│       ├── test_llm_provider_aliases.py
+│       ├── test_live_openrouter_smoke.py
+│       ├── test_openrouter.py
 │       ├── test_quality_control.py
 │       └── test_retrieval.py
 └── frontend/
