@@ -38,7 +38,6 @@ LLM_PROVIDER=stub
 EMBEDDING_PROVIDER=local
 LLM_MODEL=openai/gpt-4o-mini
 EMBEDDING_MODEL=nvidia/nemotron-3.5-embed-8b:free
-QUALITY_CONTROL_ENABLED=0
 REDIS_URL=redis://localhost:6379/0
 ```
 
@@ -60,8 +59,9 @@ Notes:
 - `EMBEDDING_DIMENSIONS` truncates the returned vector. Nemotron 3.5 Embed 8B
   is natively 4096-dim and supports truncation; if a model ignores the request
   the backend fails fast with the width it actually returned.
-- `OPENAI_API_KEY` is only needed for the optional `deepeval` judge when
-  `QUALITY_CONTROL_ENABLED=1`.
+- `EVAL_JUDGE_ENABLED=1` turns on the optional LLM-as-judge metrics in the
+  offline evaluation harness. The judge runs through OpenRouter on
+  `EVAL_JUDGE_MODEL`, so no separate `OPENAI_API_KEY` is required.
 - See [backend/.env.example](backend/.env.example) for every variable, grouped by section.
 
 ### Start containers
@@ -149,39 +149,92 @@ Key considerations before production rollout:
 | Retrieval strategy | Dense-only retrieval vs hybrid retrieval and reranking. | **Vector top-k + lightweight grounding filters** implemented now for a simple and stable baseline. |
 | Prompt & context management | Stateless prompt only vs session-aware reformulation and memory. | **Grounded system prompt + sliding window memory** to keep answers citation-based while improving follow-up query resolution. |
 | Guardrails | No input filter vs explicit pre-check policy layer. | **Input guardrails enabled** for prompt-injection patterns and explicit sexual content at the `/api/chat` boundary. |
-| Quality control | No judge, heuristic-only, or LLM-as-judge with fallback. | **Optional `deepeval` LLM-as-judge using `AnswerRelevancyMetric`**, with a deterministic lexical-overlap fallback so the chat path never fails because the judge is unavailable. |
+| Evaluation | Per-answer judge in the request path vs an offline run over a ground-truthed test set. | **Offline evaluation on a fixed test set**, because a per-answer judge has no ground truth and so cannot detect retrieval of the wrong document — the dominant failure in document QA. |
 | Observability | Console-only logs vs structured logs + audit artifacts. | **Application logging + chat audit file** for runtime diagnostics and future auditing workflows. |
 
-### Response evaluation metric
+### Response evaluation
 
-Answer quality is currently scored by a single metric: **`AnswerRelevancyMetric`
-from [`deepeval`](https://github.com/confident-ai/deepeval)**, applied per answer
-in [`ResponseQualityEvaluator`](backend/app/services/quality_control.py).
+Answer quality is measured **offline, against a fixed ground-truthed test set**,
+not per answer inside the request path. A per-answer relevancy judge has no
+ground truth, so it cannot see the failure that dominates document QA:
+retrieving the *wrong* document and answering confidently from it. An answer
+quoting the Premium deductible in response to a question about the Standard plan
+scores highly on answer-relevancy and is completely wrong.
 
-| Aspect | Detail |
-|---|---|
-| Metric | `deepeval.metrics.AnswerRelevancyMetric` (LLM-as-judge) |
-| Test case | `LLMTestCase(input=question, actual_output=answer, retrieval_context=contexts)` |
-| Threshold | `QUALITY_CONTROL_THRESHOLD` (default `0.5`); `passed = score >= threshold` |
-| Enabled by | `QUALITY_CONTROL_ENABLED` (off by default) |
-| Judge credentials | `OPENAI_API_KEY` — deepeval resolves its own judge model, independently of `LLM_PROVIDER` |
-| Reported as | `method="deepeval.answer_relevancy"`, with the judge's rationale when `QUALITY_CONTROL_INCLUDE_REASON=1` |
+The harness lives in [backend/app/evaluation](backend/app/evaluation) and is run
+from the `backend` directory:
 
-Behaviour in the two non-primary paths:
+```bash
+python -m app.evaluation.run              # deterministic metrics only, no API key
+EVAL_JUDGE_ENABLED=1 python -m app.evaluation.run   # adds LLM-as-judge metrics
+```
 
-- **Fallback.** If deepeval is not installed or the judge call fails, and
-  `QUALITY_CONTROL_FAIL_OPEN=1`, the score falls back to a deterministic
-  lexical-overlap heuristic reported as `method="fallback.lexical_overlap"`.
-  With `QUALITY_CONTROL_FAIL_OPEN=0` the error propagates instead.
-- **Skipped.** Answers that are both ungrounded and have no retrieved context
-  are not scored, to avoid penalising the explicit "no evidence found"
-  response. These are reported as `method="skipped"` with a score of `0.0`.
+Results are written to `data/evaluations/{run_id}.json`.
 
-Scope note: `AnswerRelevancyMetric` scores how well the answer addresses the
-question. It is not a groundedness or hallucination check — faithfulness to the
-retrieved sources is handled separately by the citation and grounding filters in
-the retrieval path. Adding a faithfulness metric would mean a second deepeval
-metric alongside this one.
+**First try.** The baseline runs are kept in
+[docs/evaluation-runs/first-try](docs/evaluation-runs/first-try) — the result
+documents, the exact corpus PDFs that were indexed, the test set as it stood, and
+a visual dashboard. On that baseline the pipeline scores 100% source hit rate,
+1.000 mean reciprocal rank and 100% refusal accuracy over 15 cases.
+
+That folder's [README](docs/evaluation-runs/first-try/README.md) records what the
+runs surfaced, which was mostly defects in the harness itself:
+
+- A refusal detector that matched only the pipeline's canned strings, so correct
+  model refusals scored as failures.
+- A provider timeout scored as a refusal, rather than as the third state it is.
+- `hash()`-based local embeddings being unstable across processes, which made any
+  persisted index unmatchable after a restart.
+- **The judge tier is not yet trustworthy.** Of four sub-perfect judge scores,
+  three were judge errors that contradicted the supplied ground truth, and none
+  found a real defect. Treat `faithfulness` and `answer_relevancy` as unproven
+  until re-run against a stronger judge model; the deterministic metrics are the
+  signal.
+- Still open: the grounding filter admits irrelevant chunks and reports
+  `grounded: true` regardless. Unfixed, since it affects the live chat path and
+  deserves its own before/after run against this baseline.
+
+**Corpus.** Four fictional ShieldCare insurance PDFs, generated by
+[generate_corpus.py](backend/app/evaluation/corpus/generate_corpus.py) with no
+third-party dependency. Three are structurally identical and differ only in
+their values, so a question like "what is the deductible?" matches all three
+almost equally on lexical overlap — answering it correctly requires the
+retrieval layer to actually discriminate. The fourth is a comparison table laid
+out with absolute text positioning, which is how real PDFs encode tables and
+which reproduces the extraction mangling chunking has to cope with.
+
+**Test set.** [testset.json](backend/app/evaluation/testset.json) holds 15 cases
+covering confusable per-plan lookups, cross-document questions, table lookups, a
+paraphrase with no lexical overlap, and three negatives whose answers are absent
+from the corpus — where the correct behaviour is a refusal.
+
+| Tier | Metrics | Cost |
+|---|---|---|
+| **Deterministic** (always runs) | `source_hit` / hit rate, MRR, refusal accuracy, grounded rate, citation count, latency | None — no LLM involved, so it runs under `stub`/`local` in CI |
+| **LLM-as-judge** (opt-in) | `AnswerRelevancyMetric`, `FaithfulnessMetric`, `ContextualPrecisionMetric`, `ContextualRecallMetric` | ~8 API calls per case, ~85% of a run's token spend |
+
+The deterministic tier is the primary regression signal: it needs no key, is
+fully reproducible, and catches wrong-document retrieval directly. Judge metrics
+are scored in a single batched `evaluate()` call through
+[eval_judge.py](backend/app/services/eval_judge.py), which routes deepeval
+through OpenRouter so one key covers both answering and evaluation. When the
+judge is disabled or unavailable, every metric is recorded as `skipped` **with a
+reason** rather than silently falling back to a weaker score.
+
+The judge needs a model that returns schema-valid JSON reliably under
+concurrency. `EVAL_JUDGE_MODEL` defaults to a free model, which in practice
+failed twice — once on the free-tier daily cap, once on timeouts — and then
+produced three false-positive findings when it did run. Set it to a stronger
+model before relying on judge scores.
+
+Every result snapshots `retrieval_k`, `chunk_size`, `chunk_overlap` and the
+model/provider pair it ran under; without that, two runs are not comparable and
+a fixed test set buys nothing.
+
+Negative cases are excluded from the retrieval rates and from the judge: a
+negative that correctly cites nothing would otherwise drag the hit rate down for
+behaving exactly as intended, and contextual recall against a refusal is
+meaningless. Their correctness is captured by `refusal_accuracy`.
 
 ## 6) Technical Decisions Taken
 
@@ -190,7 +243,7 @@ Current simple decisions:
 - Next.js + FastAPI split for clear frontend/backend boundaries and independent scaling.
 - Chroma local persistence for quick local development and zero-extra infrastructure.
 - OpenRouter gateway behind a thin local wrapper, keeping models swappable without coupling business logic to a vendor SDK.
-- Guardrails + optional quality control path to improve safety and answer reliability; evaluation currently uses deepeval's `AnswerRelevancyMetric` with a lexical-overlap fallback.
+- Guardrails at the `/api/chat` boundary for safety; answer quality is measured offline against a ground-truthed test set rather than scored per answer in the request path.
 
 Engineering standards document:
 
@@ -222,7 +275,16 @@ Screenshot(s):
 
 If embedded playback is unsupported, open: [Demo video](assets/simplescreenrecorder-2026-07-22_15.30.13.mp4)
 
-## 10) Licence
+
+## 10) TODO LIST
+
+
+1. Add more evaluation metrices
+2. Implement offline with golden set of questions, and online evaluation sets and create a CI/CD Pipeline 
+3. Implement observablitiy framework for online evaluation
+4. Implement local / On-Permise Version for internal data
+
+## 11) Licence
 
 MIT License - Use as a template for your own rag applications!
 

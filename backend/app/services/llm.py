@@ -8,11 +8,11 @@ Provides two main classes:
 - :class:`AnswerGenerator`: generates grounded answers and reformulates
   multi-turn queries via OpenRouter, or a zero-key stub for local development.
 
-Private helpers handle API key resolution and the hash-based local embedding
-strategy.
+Helpers handle API key resolution and the hash-based local embedding strategy.
 """
 
 from collections import Counter
+import hashlib
 import math
 import re
 
@@ -99,7 +99,7 @@ class EmbeddingService:
         client = OpenRouterClient(
             api_key=(
                 self._settings.embedding_api_key
-                or _resolve_openrouter_api_key(self._settings)
+                or resolve_openrouter_api_key(self._settings)
             ),
             base_url=self._settings.embedding_api_base or self._settings.openrouter_base_url,
             timeout=self._settings.llm_timeout_seconds,
@@ -232,7 +232,7 @@ class AnswerGenerator:
     def _client(self) -> OpenRouterClient:
         """Build an :class:`OpenRouterClient` from the current settings."""
         return OpenRouterClient(
-            api_key=_resolve_openrouter_api_key(self._settings),
+            api_key=resolve_openrouter_api_key(self._settings),
             base_url=self._settings.openrouter_base_url,
             timeout=self._settings.llm_timeout_seconds,
             site_url=self._settings.openrouter_site_url,
@@ -248,7 +248,7 @@ class AnswerGenerator:
             )
 
 
-def _resolve_openrouter_api_key(settings: Settings) -> str | None:
+def resolve_openrouter_api_key(settings: Settings) -> str | None:
     """Return the OpenRouter key, preferring an explicit ``llm_api_key`` override."""
     return settings.llm_api_key or settings.openrouter_api_key
 
@@ -277,17 +277,29 @@ def _verify_embedding_width(
         )
 
 
+def _token_bucket(token: str, dimensions: int) -> int:
+    """Map *token* to a bucket index stably across processes.
+
+    Deliberately not :func:`hash`, whose string hashing is salted per
+    interpreter process (``PYTHONHASHSEED``). With ``hash`` the vector for a
+    given token differed between runs, so a persisted Chroma index built before
+    a restart could not be matched by queries issued after one, and retrieval
+    silently degraded to noise.
+    """
+    digest = hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest()
+    return int.from_bytes(digest, "big") % dimensions
+
+
 def _hashed_embedding(text: str, dimensions: int) -> list[float]:
     """Produce a normalised hash-based bag-of-words embedding for *text*.
 
-    Tokens are mapped into a *dimensions*-dimensional vector by hashing;
-    counts are accumulated per bucket, then L2-normalised.
+    Tokens are mapped into a *dimensions*-dimensional vector by a stable
+    digest; counts are accumulated per bucket, then L2-normalised.
     """
     counts = Counter(token.lower() for token in TOKEN_RE.findall(text))
     vector = [0.0] * dimensions
     for token, count in counts.items():
-        index = hash(token) % dimensions
-        vector[index] += float(count)
+        vector[_token_bucket(token, dimensions)] += float(count)
     return _normalize_vector(vector)
 
 
@@ -316,7 +328,8 @@ def _fallback_answer(question: str, contexts: list[str]) -> str:
 def lexical_overlap_score(question: str, text: str) -> float:
     """Return the fraction of *question* tokens that also appear in *text*.
 
-    Used as a lightweight grounding check and quality-control fallback.
+    Used as a lightweight grounding check and by the offline evaluation
+    runner's deterministic metrics.
     Returns ``0.0`` when either string contains no alphanumeric tokens.
     """
     question_terms = {token.lower() for token in TOKEN_RE.findall(question)}

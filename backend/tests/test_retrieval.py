@@ -49,31 +49,6 @@ class MarkerAnswerGenerator:
         return self._answer
 
 
-class StubQualityEvaluator:
-    def __init__(self, score: float, passed: bool, method: str, reason: str | None = None) -> None:
-        self.score = score
-        self.passed = passed
-        self.method = method
-        self.reason = reason
-
-    def evaluate(
-        self,
-        *,
-        question: str,
-        answer: str,
-        contexts: list[str],
-        grounded: bool,
-    ):
-        from app.services.quality_control import QualityEvaluation
-
-        return QualityEvaluation(
-            score=self.score,
-            passed=self.passed,
-            method=self.method,
-            reason=self.reason,
-        )
-
-
 def test_answer_question_returns_not_found_when_no_hits() -> None:
     settings = Settings()
     answer_generator = AnswerGenerator(settings)
@@ -92,7 +67,6 @@ def test_answer_question_returns_not_found_when_no_hits() -> None:
     assert response.grounded is False
     assert response.citations == []
     assert response.answer == "I could not find an answer in the indexed documents."
-    assert response.quality_control is None
     assert memory_store.appended_turns == [
         (
             "test-session",
@@ -154,7 +128,6 @@ def test_answer_question_rejects_weak_support() -> None:
 
     assert response.grounded is False
     assert response.citations == []
-    assert response.quality_control is None
     assert (
         response.answer
         == "I could not find enough supporting evidence in the indexed documents to answer that."
@@ -240,7 +213,6 @@ def test_answer_question_binds_citations_to_referenced_sources() -> None:
     assert len(response.citations) == 1
     assert response.citations[0].document_id == "doc-2"
     assert response.citations[0].filename == "policy-b.txt"
-    assert response.quality_control is None
 
 
 def test_answer_question_deduplicates_citations_by_document() -> None:
@@ -401,46 +373,6 @@ def test_answer_question_uses_reformulated_query_and_window_history() -> None:
         "What are their onboarding requirements?",
         "Interns and contractors complete onboarding in five days. [1]",
     )
-    assert response.quality_control is None
-
-
-def test_answer_question_includes_quality_control_when_evaluator_provided() -> None:
-    settings = Settings(max_answer_citations=3)
-    memory_store = StubMemoryStore()
-    vector_store = StubVectorStore(
-        [
-            SearchResult(
-                document_id="doc-1",
-                filename="policy.txt",
-                content="Retention policy keeps records for seven years.",
-                page_number=2,
-                score=0.91,
-            )
-        ]
-    )
-
-    response = answer_question(
-        question="What is the retention policy?",
-        session_id="test-session",
-        settings=settings,
-        vector_store=vector_store,
-        answer_generator=MarkerAnswerGenerator(
-            "The retention policy keeps records for seven years. [1]"
-        ),
-        chat_memory_store=memory_store,
-        quality_evaluator=StubQualityEvaluator(
-            score=0.87,
-            passed=True,
-            method="deepeval.answer_relevancy",
-            reason="Answer is relevant to the question.",
-        ),
-    )
-
-    assert response.quality_control is not None
-    assert response.quality_control.score == 0.87
-    assert response.quality_control.passed is True
-    assert response.quality_control.method == "deepeval.answer_relevancy"
-    assert response.quality_control.reason == "Answer is relevant to the question."
 
 
 def test_answer_question_remaps_single_marker_line_to_better_supported_source() -> None:
