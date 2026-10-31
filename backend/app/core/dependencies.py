@@ -10,7 +10,6 @@ from app.core.config import Settings, get_settings
 from app.services.document_store import DocumentStore
 from app.services.chat_memory import ChatMemoryStore
 from app.services.llm import AnswerGenerator, EmbeddingService
-from app.services.quality_control import ResponseQualityEvaluator
 from app.services.vector_store import VectorStore
 
 
@@ -47,9 +46,3 @@ def get_vector_store() -> VectorStore:
 def get_chat_memory_store() -> ChatMemoryStore:
     """Return the singleton :class:`ChatMemoryStore` instance."""
     return ChatMemoryStore(get_settings())
-
-
-@lru_cache
-def get_quality_evaluator() -> ResponseQualityEvaluator:
-    """Return the singleton :class:`ResponseQualityEvaluator` instance."""
-    return ResponseQualityEvaluator(get_settings())

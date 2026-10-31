@@ -112,6 +112,21 @@ def delete_stored_file(path: Path) -> None:
         path.unlink()
 
 
+def extract_pages_from_pdf(path: Path) -> list[PageContent]:
+    """Extract page text from the PDF at *path*.
+
+    Separate from :func:`persist_and_process_upload` so callers that already
+    have a file on disk — the evaluation runner ingesting its fixture corpus,
+    for instance — can reuse the same extraction without constructing an
+    :class:`~fastapi.UploadFile`.
+    """
+    reader = PdfReader(str(path))
+    pages: list[PageContent] = []
+    for index, page in enumerate(reader.pages, start=1):
+        pages.append(PageContent(text=page.extract_text() or "", page_number=index))
+    return pages
+
+
 def _extract_pages(path: Path, extension: str) -> list[PageContent]:
     """Extract page text from a supported document file.
 
@@ -128,8 +143,4 @@ def _extract_pages(path: Path, extension: str) -> list[PageContent]:
     if extension != ".pdf":
         raise DocumentProcessingError("Unsupported file type. Upload a PDF file.")
 
-    reader = PdfReader(str(path))
-    pages: list[PageContent] = []
-    for index, page in enumerate(reader.pages, start=1):
-        pages.append(PageContent(text=page.extract_text() or "", page_number=index))
-    return pages
+    return extract_pages_from_pdf(path)

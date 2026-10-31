@@ -14,3 +14,6 @@ backend/data/documents.json
 !backend/data/uploads/.gitkeep
 frontend/.next/
 frontend/node_modules/
+# deepeval local cache, written when the evaluation judge runs
+backend/.deepeval/
+backend/.deepeval-cache.json

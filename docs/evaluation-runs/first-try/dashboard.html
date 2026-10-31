@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DocTongue Retrieval Evaluation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a single scanning column — summary tiles, the retrieval and
+   judge scores, the per-case matrix, then the inputs that produced them. */
+:root {
+  color-scheme: light;
+  --bg:            #f7f7f5;
+  --surface:       #fcfcfb;
+  --surface-sunk:  #f1f1ee;
+  --border:        #dcdcd6;
+  --border-strong: #c2c2ba;
+  --text:          #171716;
+  --text-2:        #52514e;
+  --text-3:        #76756e;
+  --accent:        #2a78d6;
+  --series-1:      #2a78d6;
+  --series-2:      #eb6834;
+  --good:          #0a6e4a;
+  --good-bg:       #e3f3ec;
+  --warn:          #8a5206;
+  --warn-bg:       #fbeedb;
+  --bad:           #a62420;
+  --bad-bg:        #fbe6e4;
+  --font-display: "IBM Plex Serif", Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:            #141413;
+    --surface:       #1c1c1a;
+    --surface-sunk:  #232320;
+    --border:        #353530;
+    --border-strong: #4a4a43;
+    --text:          #f0efec;
+    --text-2:        #c3c2b7;
+    --text-3:        #96958b;
+    --accent:        #3987e5;
+    --series-1:      #3987e5;
+    --series-2:      #d95926;
+    --good:          #58c79a;
+    --good-bg:       #16342a;
+    --warn:          #e0a74a;
+    --warn-bg:       #38290f;
+    --bad:           #f08b86;
+    --bad-bg:        #3b1d1b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:            #141413;
+  --surface:       #1c1c1a;
+  --surface-sunk:  #232320;
+  --border:        #353530;
+  --border-strong: #4a4a43;
+  --text:          #f0efec;
+  --text-2:        #c3c2b7;
+  --text-3:        #96958b;
+  --accent:        #3987e5;
+  --series-1:      #3987e5;
+  --series-2:      #d95926;
+  --good:          #58c79a;
+  --good-bg:       #16342a;
+  --warn:          #e0a74a;
+  --warn-bg:       #38290f;
+  --bad:           #f08b86;
+  --bad-bg:        #3b1d1b;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0 16px 72px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 980px; margin: 0 auto; }
+
+header { padding: 40px 0 28px; border-bottom: 1px solid var(--border); }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(27px, 5vw, 38px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.lede { margin: 0; max-width: 64ch; color: var(--text-2); font-size: 16px; }
+
+h2 {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 46px 0 6px;
+  text-wrap: balance;
+}
+h3 { font-size: 14px; font-weight: 600; margin: 24px 0 8px; letter-spacing: 0.01em; }
+.sub { margin: 0 0 18px; color: var(--text-2); font-size: 14px; max-width: 70ch; }
+p { max-width: 70ch; }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(176px, 1fr));
+  gap: 12px;
+  margin: 26px 0 0;
+}
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 15px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tile .label {
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.tile .figure {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+.tile .delta { font-size: 12.5px; color: var(--text-2); font-family: var(--font-mono); }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 18px 8px;
+  margin-top: 18px;
+}
+.legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 0 0 6px; padding: 0 2px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-2); }
+.swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+.chart-scroll { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; min-width: 460px; }
+.grid-line { stroke: var(--border); stroke-width: 1; }
+.axis-text { font-family: var(--font-mono); font-size: 10.5px; fill: var(--text-3); }
+.cat-text { font-size: 12.5px; fill: var(--text-2); }
+.val-text { font-family: var(--font-mono); font-size: 11.5px; fill: var(--text); font-variant-numeric: tabular-nums; }
+.bar:hover { opacity: 0.84; }
+
+#tip {
+  position: fixed; z-index: 20; pointer-events: none; opacity: 0;
+  transition: opacity 0.1s;
+  background: var(--text); color: var(--bg);
+  font-family: var(--font-mono); font-size: 11.5px;
+  padding: 5px 8px; border-radius: 5px; white-space: nowrap;
+}
+
+.table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 620px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+thead th {
+  font-size: 11px; letter-spacing: 0.055em; text-transform: uppercase;
+  color: var(--text-3); font-weight: 600; background: var(--surface-sunk); white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.mono, .case-id { font-family: var(--font-mono); font-size: 12.5px; }
+td.dim { color: var(--text-3); }
+td.flagv { color: var(--warn); font-weight: 500; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  padding: 1.5px 6px; border-radius: 4px; white-space: nowrap;
+}
+.chip.good { background: var(--good-bg); color: var(--good); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.bad  { background: var(--bad-bg);  color: var(--bad); }
+.chip.off  { background: var(--surface-sunk); color: var(--text-3); }
+
+.tag {
+  display: inline-block; font-family: var(--font-mono); font-size: 10.5px;
+  padding: 1px 5px; border: 1px solid var(--border-strong); border-radius: 3px;
+  color: var(--text-3); white-space: nowrap;
+}
+
+.finding {
+  display: grid; grid-template-columns: 4px 1fr; gap: 0 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 9px; overflow: hidden; margin-bottom: 10px;
+}
+.finding .stripe { background: var(--text-3); }
+.finding.is-good .stripe { background: var(--good); }
+.finding.is-warn .stripe { background: var(--warn); }
+.finding.is-bad .stripe { background: var(--bad); }
+.finding .body { padding: 13px 16px 14px 2px; }
+.finding h4 { margin: 0 0 5px; font-size: 14.5px; font-weight: 600; }
+.finding p { margin: 0; font-size: 13.5px; color: var(--text-2); max-width: 72ch; }
+.finding code { background: var(--surface-sunk); padding: 1px 4px; border-radius: 3px; }
+.finding p + p { margin-top: 7px; }
+
+.note {
+  background: var(--surface-sunk); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent); border-radius: 7px;
+  padding: 13px 16px; font-size: 13.5px; color: var(--text-2); margin: 18px 0 0;
+}
+.note.caution { border-left-color: var(--warn); }
+.note strong { color: var(--text); }
+.fn { font-size: 12.5px; color: var(--text-3); margin: 10px 0 0; }
+
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 15px 16px; }
+.card .name { font-family: var(--font-mono); font-size: 12.5px; font-weight: 500; margin-bottom: 3px; }
+.card .meta { font-size: 12.5px; color: var(--text-3); font-family: var(--font-mono); }
+.card p { font-size: 13px; color: var(--text-2); margin: 8px 0 0; }
+
+dl.glossary { margin: 0; }
+dl.glossary > div { padding: 13px 0; border-bottom: 1px solid var(--border); }
+dl.glossary > div:last-child { border-bottom: none; }
+dt { font-family: var(--font-mono); font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+dd { margin: 0; font-size: 13.5px; color: var(--text-2); max-width: 74ch; }
+dd .why { color: var(--text-3); font-size: 13px; display: block; margin-top: 3px; }
+
+footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-3); }
+footer span { font-family: var(--font-mono); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">DocTongue · offline evaluation · first try</p>
+  <h1>Retrieval evaluation on a fixed test set</h1>
+  <p class="lede">15 ground-truthed questions over a four-document insurance corpus, put through the live retrieval pipeline. Retrieval scored deterministically against known-correct sources; answers scored by four LLM-as-judge metrics. Run 31 October 2026.</p>
+</header>
+
+<h2>Headline</h2>
+<p class="sub">From run <code>20261031T203622Z-1feba7</code>, the first run in which every metric completed. Retrieval figures are deterministic and reliable; the judge figures are not — see below.</p>
+
+<div class="tiles">
+  <div class="tile">
+    <span class="label">Source hit rate</span>
+    <span class="figure">100%</span>
+    <span class="delta">12 of 12 answerable</span>
+  </div>
+  <div class="tile">
+    <span class="label">Mean reciprocal rank</span>
+    <span class="figure">1.000</span>
+    <span class="delta">correct doc always 1st</span>
+  </div>
+  <div class="tile">
+    <span class="label">Refusal accuracy</span>
+    <span class="figure">100%</span>
+    <span class="delta">3 of 3 negatives</span>
+  </div>
+  <div class="tile">
+    <span class="label">Judge metrics scored</span>
+    <span class="figure">48<span style="font-size:17px;color:var(--text-3)"> / 48</span></span>
+    <span class="delta">12 skipped by design</span>
+  </div>
+</div>
+
+<h2>Scores</h2>
+<p class="sub">Retrieval metrics need no language model: they compare returned citations against the documents the test set names as valid. Judge metrics use <code>openai/gpt-4o-mini</code> through OpenRouter.</p>
+
+<div class="panel">
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--series-1)"></i> Retrieval — deterministic, no LLM</span>
+    <span><i class="swatch" style="background:var(--series-2)"></i> Judge — LLM-as-judge</span>
+  </div>
+  <div class="chart-scroll">
+    <svg viewBox="0 0 660 430" role="img" aria-label="Horizontal bar chart. Retrieval metrics: source hit rate 100, mean reciprocal rank 100, refusal accuracy 100, grounded rate 100. Judge metrics: contextual precision 100, contextual recall 100, faithfulness 89.6, answer relevancy 85.4.">
+      <g>
+        <line class="grid-line" x1="200" y1="24" x2="200" y2="394"></line>
+        <line class="grid-line" x1="307" y1="24" x2="307" y2="394"></line>
+        <line class="grid-line" x1="415" y1="24" x2="415" y2="394"></line>
+        <line class="grid-line" x1="522" y1="24" x2="522" y2="394"></line>
+        <line class="grid-line" x1="630" y1="24" x2="630" y2="394"></line>
+        <text class="axis-text" x="200" y="410" text-anchor="middle">0</text>
+        <text class="axis-text" x="307" y="410" text-anchor="middle">25</text>
+        <text class="axis-text" x="415" y="410" text-anchor="middle">50</text>
+        <text class="axis-text" x="522" y="410" text-anchor="middle">75</text>
+        <text class="axis-text" x="630" y="410" text-anchor="middle">100</text>
+        <text class="axis-text" x="415" y="426" text-anchor="middle">percent</text>
+      </g>
+
+      <text class="cat-text" x="188" y="42" text-anchor="end">Source hit rate</text>
+      <rect class="bar" x="200" y="32" width="430" height="15" rx="3" fill="var(--series-1)" data-tip="Source hit rate · 100% · 12 of 12"></rect>
+      <text class="val-text" x="636" y="44">100</text>
+
+      <text class="cat-text" x="188" y="86" text-anchor="end">Mean reciprocal rank</text>
+      <rect class="bar" x="200" y="76" width="430" height="15" rx="3" fill="var(--series-1)" data-tip="Mean reciprocal rank · 1.000"></rect>
+      <text class="val-text" x="636" y="88">1.000</text>
+
+      <text class="cat-text" x="188" y="130" text-anchor="end">Refusal accuracy</text>
+      <rect class="bar" x="200" y="120" width="430" height="15" rx="3" fill="var(--series-1)" data-tip="Refusal accuracy · 100% · 15 of 15"></rect>
+      <text class="val-text" x="636" y="132">100</text>
+
+      <text class="cat-text" x="188" y="174" text-anchor="end">Grounded rate</text>
+      <rect class="bar" x="200" y="164" width="430" height="15" rx="3" fill="var(--series-1)" data-tip="Grounded rate · 100%"></rect>
+      <text class="val-text" x="636" y="176">100</text>
+
+      <text class="cat-text" x="188" y="240" text-anchor="end">Contextual precision</text>
+      <rect class="bar" x="200" y="230" width="430" height="15" rx="3" fill="var(--series-2)" data-tip="Contextual precision · 1.000"></rect>
+      <text class="val-text" x="636" y="242">1.000</text>
+
+      <text class="cat-text" x="188" y="284" text-anchor="end">Contextual recall</text>
+      <rect class="bar" x="200" y="274" width="430" height="15" rx="3" fill="var(--series-2)" data-tip="Contextual recall · 1.000"></rect>
+      <text class="val-text" x="636" y="286">1.000</text>
+
+      <text class="cat-text" x="188" y="328" text-anchor="end">Faithfulness</text>
+      <rect class="bar" x="200" y="318" width="385" height="15" rx="3" fill="var(--series-2)" data-tip="Faithfulness · 0.896 · 2 cases at 0.5, 1 at 0.75"></rect>
+      <text class="val-text" x="591" y="330">0.896</text>
+
+      <text class="cat-text" x="188" y="372" text-anchor="end">Answer relevancy</text>
+      <rect class="bar" x="200" y="362" width="367" height="15" rx="3" fill="var(--series-2)" data-tip="Answer relevancy · 0.854 · 3 cases at 0.5, 1 at 0.75"></rect>
+      <text class="val-text" x="573" y="374">0.854</text>
+    </svg>
+  </div>
+</div>
+
+<p class="fn">Retrieval is exact. The two answer-side metrics sit below 1.0 because of four cases — and on inspection three of those deductions are judge errors, not pipeline faults. Mean response time 3.3 s per question.</p>
+
+<h2>Per-case results</h2>
+<p class="sub">Rank is the position of the first correct document among the returned citations. The three negative cases have no answer in the corpus, so citing nothing is correct and they are excluded from the judge — contextual recall against a refusal is meaningless, and their correctness is already captured by refusal accuracy.</p>
+
+<div class="table-scroll">
+<table>
+  <thead>
+    <tr>
+      <th>Case</th>
+      <th>Kind</th>
+      <th class="num">Rank</th>
+      <th class="num">Cites</th>
+      <th class="num">Relevancy</th>
+      <th class="num">Faithful</th>
+      <th class="num">Precision</th>
+      <th class="num">Recall</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="case-id">basic-monthly-premium</td><td><span class="tag">confusable</span></td><td class="num">1</td><td class="num">2</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">standard-deductible</td><td><span class="tag">confusable</span></td><td class="num">1</td><td class="num">2</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">basic-deductible</td><td><span class="tag">confusable</span></td><td class="num">1</td><td class="num">2</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">premium-coverage-ceiling</td><td><span class="tag">confusable</span></td><td class="num">1</td><td class="num">2</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">premium-monthly-cost</td><td><span class="tag">confusable</span></td><td class="num">1</td><td class="num">2</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">standard-excess-per-claim</td><td><span class="tag">confusable</span></td><td class="num">1</td><td class="num">2</td><td class="num flagv">0.50</td><td class="num flagv">0.50</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">cross-dental-cover</td><td><span class="tag">cross-doc</span></td><td class="num">1</td><td class="num">2</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">cross-waiting-periods</td><td><span class="tag">cross-doc</span></td><td class="num">1</td><td class="num">3</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">table-physiotherapy-premium</td><td><span class="tag">table</span></td><td class="num">1</td><td class="num">2</td><td class="num flagv">0.50</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">table-out-of-network-standard</td><td><span class="tag">table</span></td><td class="num">1</td><td class="num">1</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">table-annual-health-assessment</td><td><span class="tag">table</span></td><td class="num">1</td><td class="num">1</td><td class="num flagv">0.50</td><td class="num flagv">0.50</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">paraphrase-claim-window</td><td><span class="tag">paraphrase</span></td><td class="num">1</td><td class="num">2</td><td class="num flagv">0.75</td><td class="num flagv">0.75</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+    <tr><td class="case-id">negative-platinum-plan</td><td><span class="tag">negative</span></td><td class="num dim">n/a</td><td class="num">2</td><td class="num dim" colspan="4" style="text-align:left">refused correctly · judge not applicable</td></tr>
+    <tr><td class="case-id">negative-pet-insurance</td><td><span class="tag">negative</span></td><td class="num dim">n/a</td><td class="num">3</td><td class="num dim" colspan="4" style="text-align:left">refused correctly · judge not applicable</td></tr>
+    <tr><td class="case-id">negative-chief-medical-officer</td><td><span class="tag">negative</span></td><td class="num dim">n/a</td><td class="num">3</td><td class="num dim" colspan="4" style="text-align:left">refused correctly · judge not applicable</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>The judge got three of four wrong</h2>
+<p class="sub">All four answers below are correct. Checked against the reference answers, three of the four deductions contradict the ground truth the judge was given. Retrieval fetched the right document in every case.</p>
+
+<div class="finding is-bad">
+  <div class="stripe"></div>
+  <div class="body">
+    <h4><code>standard-excess-per-claim</code> — judge wrong</h4>
+    <p><strong>Judge said:</strong> the answer "incorrectly implies that the excess of £40 is an additional cost to the annual deductible".</p>
+    <p><strong>But the reference answer reads:</strong> "An excess of £40 applies to each separate claim on the Standard plan, in addition to the annual deductible." The pipeline's answer is near-verbatim identical. The judge penalised an answer for matching its own ground truth.</p>
+  </div>
+</div>
+
+<div class="finding is-bad">
+  <div class="stripe"></div>
+  <div class="body">
+    <h4><code>table-annual-health-assessment</code> — judge wrong</h4>
+    <p><strong>Judge said:</strong> the answer "incorrectly claims that the Annual health assessment feature is listed as 'No' for Standard, which contradicts the retrieval context".</p>
+    <p><strong>But the comparison table does list Standard as "No".</strong> The answer quoted the row correctly across all three tiers. The judge misread the context it had been handed.</p>
+  </div>
+</div>
+
+<div class="finding is-bad">
+  <div class="stripe"></div>
+  <div class="body">
+    <h4><code>table-physiotherapy-premium</code> — judge wrong</h4>
+    <p><strong>Judge said:</strong> the output "included irrelevant information about coverage conditions instead of directly addressing the number of sessions".</p>
+    <p><strong>But the answer opens with the number</strong> — 24 sessions per year — and the "irrelevant" clause is the GP-referral condition that the reference answer also carries. Faithfulness scored 1.00 on the same answer.</p>
+  </div>
+</div>
+
+<div class="finding is-warn">
+  <div class="stripe"></div>
+  <div class="body">
+    <h4><code>paraphrase-claim-window</code> — judge defensible</h4>
+    <p>The question asks about "the mid-tier policy", a phrase in no document. The answer resolved it to Standard and gave the correct 60-day window, and was docked for asserting an equivalence the context never states.</p>
+    <p>Strict rather than wrong: mapping "mid-tier" to the middle of three tiers is sound, but the documents genuinely do not say it. The one deduction worth keeping.</p>
+  </div>
+</div>
+
+<div class="note caution">
+  <strong>The most important result of this exercise.</strong> A cheap judge over 15 cases produced three false positives and no true ones, while the deterministic metrics caught every genuine defect. <code>openai/gpt-4o-mini</code> is a small model running deepeval's multi-step claim-extraction chains, where an error at any step compounds — and two of its three mistakes are self-contradictory. Treat the judge tier as unproven until it is re-run against a stronger model. On this test set the pipeline is at 100% on every metric that can be trusted.
+</div>
+
+<h2>What the numbers mean</h2>
+
+<dl class="glossary">
+  <div>
+    <dt>source_hit_rate</dt>
+    <dd>Share of answerable cases where a returned citation came from a document the test set names as valid.
+    <span class="why">The metric a per-answer relevancy judge cannot produce. Without ground truth there is no way to know the system quoted the Premium deductible at a question about the Standard plan.</span></dd>
+  </div>
+  <div>
+    <dt>mean_reciprocal_rank</dt>
+    <dd>Average of 1 ÷ (position of the first correct citation). Correct document first every time gives 1.000; consistently second gives 0.500.
+    <span class="why">Separates "found it" from "found it first".</span></dd>
+  </div>
+  <div>
+    <dt>refusal_accuracy</dt>
+    <dd>Share of cases where declining matched expectation: the three negatives refused, the twelve answerable ones not.
+    <span class="why">Catches over-eager answering, which relevancy scoring rewards — a fluent answer to an unanswerable question looks highly relevant.</span></dd>
+  </div>
+  <div>
+    <dt>grounded_rate</dt>
+    <dd>How often the pipeline set its own <code>grounded</code> flag.
+    <span class="why">At 100% including on questions with no answer in the corpus, this flag currently carries little information. See the grounding-filter finding.</span></dd>
+  </div>
+  <div>
+    <dt>contextual_precision / contextual_recall</dt>
+    <dd>Judge metrics scoring the <em>retrieved context</em> against the reference answer: whether relevant chunks ranked above irrelevant ones, and whether the context covered everything the reference answer needed.
+    <span class="why">Both 1.000, which agrees with the deterministic retrieval scores — two independent methods reaching the same verdict.</span></dd>
+  </div>
+  <div>
+    <dt>faithfulness</dt>
+    <dd>Whether every claim in the answer is supported by the retrieved context. The hallucination check.
+    <span class="why">0.896 — but both deductions were traced to judge error, not unsupported claims. No hallucination was found in this run.</span></dd>
+  </div>
+  <div>
+    <dt>answer_relevancy</dt>
+    <dd>Whether the answer addresses the question asked, without padding.
+    <span class="why">0.854, lowest of the four and the least reliable: it docked answers for clauses the reference answers themselves contain.</span></dd>
+  </div>
+</dl>
+
+<h2>Defects this exercise surfaced</h2>
+<p class="sub">Three of the five were in the evaluation code itself. That is expected on a first run and is the argument for keeping these baselines.</p>
+
+<div class="finding is-bad">
+  <div class="stripe"></div>
+  <div class="body">
+    <h4>Refusal detection matched only canned strings</h4>
+    <p>The scorer recognised refusals by substring-matching the pipeline's two fixed phrases. A real model refuses in its own words — <em>"I could not find information about a Platinum plan in the indexed documents"</em> — so all three negatives were refused correctly and all three scored as failures, reading 80% instead of 100%. Now requires an inability phrase and a reference to the documents in the same sentence, so a negative fact such as "dental cover is not included on Basic" still reads as an answer.</p>
+  </div>
+</div>
+
+<div class="finding is-bad">
+  <div class="stripe"></div>
+  <div class="body">
+    <h4>A provider outage was scored as a refusal</h4>
+    <p>In an earlier attempt one answer call timed out and the pipeline returned its evidence-only fallback. The broadened matcher read that as a decline and failed the case. An LLM failure is a third state, neither answer nor refusal: it is now detected separately, recorded as an errored case and excluded from every rate, so an outage cannot masquerade as a retrieval regression.</p>
+  </div>
+</div>
+
+<div class="finding is-warn">
+  <div class="stripe"></div>
+  <div class="body">
+    <h4>The grounding filter passes irrelevant chunks</h4>
+    <p>Asked who ShieldCare's chief medical officer is, retrieval returned chunks about out-of-network reimbursement and flagged them <code>grounded: true</code>. The filter admits a chunk when 10% of the question's words appear in it, and "ShieldCare" appears in every document, so the no-evidence branch never fires. The model refuses anyway, so the user sees the right outcome, but the flag is unreliable and the burden sits entirely on the prompt.</p>
+    <p>Not fixed. It affects the live chat path and deserves its own before/after run against this baseline.</p>
+  </div>
+</div>
+
+<div class="finding is-good">
+  <div class="stripe"></div>
+  <div class="body">
+    <h4>A latent embedding bug, fixed</h4>
+    <p>The keyless embedding provider bucketed tokens with Python's <code>hash()</code>, which is salted per process. Vectors differed between runs, so a persisted index became unmatchable after a backend restart and retrieval silently degraded to noise. Replaced with a <code>blake2b</code> digest, confirmed stable across separate processes. Existing <code>EMBEDDING_PROVIDER=local</code> indexes must be rebuilt.</p>
+  </div>
+</div>
+
+<div class="finding is-bad">
+  <div class="stripe"></div>
+  <div class="body">
+    <h4>The judge tier is not yet trustworthy</h4>
+    <p>Of four sub-perfect scores, three were judge errors contradicting the supplied ground truth, and none identified a real defect. Every genuine problem in this exercise was caught by the deterministic metrics or by reading the output. Until a stronger judge model is tried, <code>faithfulness</code> and <code>answer_relevancy</code> should not drive decisions.</p>
+  </div>
+</div>
+
+<div class="finding is-good">
+  <div class="stripe"></div>
+  <div class="body">
+    <h4>The judge failed loudly twice before succeeding</h4>
+    <p>First attempt: all 60 metric slots recorded <code>error</code> with <code>429 free-models-per-day</code> — the fifteen answers had consumed a 50-request daily cap. Second: <code>TimeoutError</code>, the throttled free model unable to return structured JSON in time. Both times no score was invented in place of the failure, which is precisely what the previous fail-open evaluator got wrong. Switching the judge to <code>openai/gpt-4o-mini</code> resolved it.</p>
+  </div>
+</div>
+
+<h2>The corpus</h2>
+<p class="sub">Four PDFs written for this test and generated by a dependency-free script, so nothing private reaches a cloud judge. Three are deliberately near-identical in structure and differ only in their values: "what is the deductible?" matches all three almost equally on word overlap, so answering it requires retrieval to genuinely discriminate. ShieldCare is fictional.</p>
+
+<div class="cols">
+  <div class="card">
+    <div class="name">shield_basic.pdf</div>
+    <div class="meta">2 pages · 4 chunks</div>
+    <p>£24/mo · £1,500 deductible · £50,000 ceiling · 30-day claims · no dental</p>
+  </div>
+  <div class="card">
+    <div class="name">shield_standard.pdf</div>
+    <div class="meta">2 pages · 4 chunks</div>
+    <p>£48/mo · £750 deductible · £250,000 ceiling · 60-day claims · dental</p>
+  </div>
+  <div class="card">
+    <div class="name">shield_premium.pdf</div>
+    <div class="meta">2 pages · 4 chunks</div>
+    <p>£95/mo · £250 deductible · £1,000,000 ceiling · 90-day claims · dental + physio</p>
+  </div>
+  <div class="card">
+    <div class="name">shield_plan_comparison.pdf</div>
+    <div class="meta">1 page · 2 chunks</div>
+    <p>Twelve-row comparison table across all three tiers, laid out with absolute text positioning — the way real PDFs encode tables, and where extraction usually breaks.</p>
+  </div>
+</div>
+
+<h3>Values the questions are written against</h3>
+<div class="table-scroll" style="margin-top:4px">
+<table>
+  <thead>
+    <tr><th>Feature</th><th class="num">Basic</th><th class="num">Standard</th><th class="num">Premium</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Monthly premium</td><td class="num">£24</td><td class="num">£48</td><td class="num">£95</td></tr>
+    <tr><td>Annual deductible</td><td class="num">£1,500</td><td class="num">£750</td><td class="num">£250</td></tr>
+    <tr><td>Annual coverage ceiling</td><td class="num">£50,000</td><td class="num">£250,000</td><td class="num">£1,000,000</td></tr>
+    <tr><td>Claim submission window</td><td class="num">30 days</td><td class="num">60 days</td><td class="num">90 days</td></tr>
+    <tr><td>Excess per claim</td><td class="num">£75</td><td class="num">£40</td><td class="num">£10</td></tr>
+    <tr><td>Dental cover</td><td class="num">No</td><td class="num">Yes</td><td class="num">Yes</td></tr>
+    <tr><td>Physiotherapy sessions</td><td class="num">0</td><td class="num">6</td><td class="num">24</td></tr>
+    <tr><td>Waiting period</td><td class="num">90 days</td><td class="num">30 days</td><td class="num">14 days</td></tr>
+    <tr><td>Out-of-network reimbursement</td><td class="num">40%</td><td class="num">60%</td><td class="num">80%</td></tr>
+    <tr><td>Annual health assessment</td><td class="num">No</td><td class="num">No</td><td class="num">Yes</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>The test set</h2>
+<p class="sub">15 cases, each carrying a reference answer and the document IDs that can legitimately support it. Document IDs are fixed rather than generated, so re-ingesting a document overwrites its vectors instead of duplicating them.</p>
+
+<div class="table-scroll">
+<table>
+  <thead>
+    <tr><th>Kind</th><th class="num">Cases</th><th>What it stresses</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="tag">confusable</span></td><td class="num">6</td><td>Per-plan value lookups where all three documents match the question nearly equally. The discriminating core of the set.</td></tr>
+    <tr><td><span class="tag">cross-doc</span></td><td class="num">2</td><td>Questions spanning tiers, forcing multiple citations and exercising document-level marker collapsing.</td></tr>
+    <tr><td><span class="tag">table</span></td><td class="num">3</td><td>Values reachable only through the comparison table, where chunking separates a cell from its row and column headers.</td></tr>
+    <tr><td><span class="tag">paraphrase</span></td><td class="num">1</td><td>Worded with no vocabulary overlap with the source — "the mid-tier policy" appears in no document.</td></tr>
+    <tr><td><span class="tag">negative</span></td><td class="num">3</td><td>Answers absent from the corpus entirely. The correct behaviour is a refusal, which no relevancy metric can check.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Configuration</h2>
+<p class="sub">Captured with every result document. Without it two runs are not comparable and a fixed test set buys nothing.</p>
+
+<div class="table-scroll">
+<table>
+  <thead>
+    <tr><th>Setting</th><th>Value</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Answer model</td><td class="mono">nvidia/nemotron-3.5-super-vl:free</td></tr>
+    <tr><td>Embeddings</td><td class="mono">nvidia/nemotron-3.5-embed-1b:free</td></tr>
+    <tr><td>Judge model</td><td class="mono">openai/gpt-4o-mini</td></tr>
+    <tr><td>retrieval_k</td><td class="mono">5</td></tr>
+    <tr><td>chunk size / overlap</td><td class="mono">900 / 150</td></tr>
+    <tr><td>max citations</td><td class="mono">3</td></tr>
+    <tr><td>Corpus chunks indexed</td><td class="mono">14</td></tr>
+    <tr><td>Mean response time</td><td class="mono">3.33 s</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+  <strong>What a keyless run shows instead.</strong> With <code>LLM_PROVIDER=stub</code> and <code>EMBEDDING_PROVIDER=local</code> the same test set runs with no API key, no network and no cost, in 0.004 s per case. Retrieval then scores 91.7% hit rate and 0.833 MRR, because word-count embeddings cannot reach the comparison table and rank the right document second twice. Judge metrics are reported as skipped. That mode is for proving the harness works and for continuous integration, not for judging pipeline quality.
+</div>
+
+<footer>
+  DocTongue offline evaluation · run <span>20261031T203622Z-1feba7</span> · corpus, test set and result documents in <span>docs/evaluation-runs/first-try</span> · harness in <span>backend/app/evaluation</span>
+</footer>
+
+</div>
+
+<div id="tip" role="status" aria-live="off"></div>
+
+<script>
+(function () {
+  var tip = document.getElementById('tip');
+  document.querySelectorAll('.bar').forEach(function (bar) {
+    bar.addEventListener('pointerenter', function (e) {
+      tip.textContent = bar.getAttribute('data-tip') || '';
+      tip.style.opacity = '1';
+      move(e);
+    });
+    bar.addEventListener('pointermove', move);
+    bar.addEventListener('pointerleave', function () { tip.style.opacity = '0'; });
+  });
+  function move(e) {
+    var pad = 12;
+    var x = Math.min(e.clientX + pad, window.innerWidth - tip.offsetWidth - 8);
+    var y = Math.max(e.clientY - tip.offsetHeight - pad, 8);
+    tip.style.left = x + 'px';
+    tip.style.top = y + 'px';
+  }
+})();
+</script>
+</body>
+</html>

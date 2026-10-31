@@ -78,18 +78,6 @@ export function ChatPanel({
             <p className="mt-3 whitespace-pre-wrap text-sm leading-6">
               {message.content}
             </p>
-            {message.role === "assistant" && message.qualityControl ? (
-              <div
-                className={
-                  message.qualityControl.passed
-                    ? "mt-3 inline-flex items-center rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-200"
-                    : "mt-3 inline-flex items-center rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-xs text-amber-200"
-                }
-                title={message.qualityControl.reason ?? undefined}
-              >
-                QC {message.qualityControl.passed ? "pass" : "review"} - {Math.round(message.qualityControl.score * 100)}%
-              </div>
-            ) : null}
             {message.role === "assistant" && message.citations?.length ? (
               <SourceCitations citations={message.citations} />
             ) : null}

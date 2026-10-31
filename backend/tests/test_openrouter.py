@@ -5,7 +5,7 @@ from app.core.config import Settings
 from app.services.llm import (
     AnswerGenerator,
     EmbeddingService,
-    _resolve_openrouter_api_key,
+    resolve_openrouter_api_key,
 )
 from app.services.openrouter import (
     INPUT_TYPE_DOCUMENT,
@@ -247,10 +247,10 @@ def test_provider_names_are_case_insensitive() -> None:
 
 def test_resolve_openrouter_api_key_prefers_explicit_override() -> None:
     settings = Settings(openrouter_api_key="from-openrouter-var")
-    assert _resolve_openrouter_api_key(settings) == "from-openrouter-var"
+    assert resolve_openrouter_api_key(settings) == "from-openrouter-var"
 
     settings = Settings(openrouter_api_key="from-openrouter-var", llm_api_key="override")
-    assert _resolve_openrouter_api_key(settings) == "override"
+    assert resolve_openrouter_api_key(settings) == "override"
 
 
 def test_answer_generator_rejects_unknown_provider() -> None:

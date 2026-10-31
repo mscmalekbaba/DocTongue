@@ -19,10 +19,9 @@ from datetime import datetime, timezone
 from threading import Lock
 
 from app.core.config import Settings
-from app.models.schemas import ChatResponse, Citation, QualityControlResult
+from app.models.schemas import ChatResponse, Citation
 from app.services.chat_memory import ChatMemoryStore
 from app.services.llm import AnswerGenerator, lexical_overlap_score
-from app.services.quality_control import ResponseQualityEvaluator
 from app.services.vector_store import SearchResult, VectorStore
 
 
@@ -39,9 +38,15 @@ def answer_question(
     vector_store: VectorStore,
     answer_generator: AnswerGenerator,
     chat_memory_store: ChatMemoryStore,
-    quality_evaluator: ResponseQualityEvaluator | None = None,
+    *,
+    audit: bool = True,
 ) -> ChatResponse:
-    """Answer a question using retrieval + grounded citation binding."""
+    """Answer a question using retrieval + grounded citation binding.
+
+    Set *audit* to ``False`` to skip the plain-text audit log, which the
+    offline evaluation runner does so that a test-set run does not append to
+    the tracked chat log.
+    """
     recent_turns = chat_memory_store.get_recent_turns(
         session_id=session_id,
         limit=settings.chat_memory_window,
@@ -53,7 +58,6 @@ def answer_question(
             answer="I could not find an answer in the indexed documents.",
             citations=[],
             grounded=False,
-            quality_control=None,
         )
     else:
         top_hits = _filter_grounded_hits(retrieval_query, hits)
@@ -62,7 +66,6 @@ def answer_question(
                 answer="I could not find enough supporting evidence in the indexed documents to answer that.",
                 citations=[],
                 grounded=False,
-                quality_control=None,
             )
         else:
             grounded = True
@@ -93,44 +96,26 @@ def answer_question(
                 )
                 for hit in cited_hits
             ]
-            quality_control = None
-            if quality_evaluator is not None:
-                try:
-                    quality = quality_evaluator.evaluate(
-                        question=question,
-                        answer=answer,
-                        contexts=[hit.content for hit in cited_hits],
-                        grounded=grounded,
-                    )
-                    if quality is not None:
-                        quality_control = QualityControlResult(
-                            score=round(quality.score, 3),
-                            passed=quality.passed,
-                            method=quality.method,
-                            reason=quality.reason,
-                        )
-                except Exception:
-                    logger.exception("Quality control evaluation failed.")
 
             response = ChatResponse(
                 answer=answer,
                 citations=citations,
                 grounded=grounded,
-                quality_control=quality_control,
             )
 
     try:
         chat_memory_store.append_turn(session_id, question, response.answer)
     except Exception:
         logger.exception("Failed to append chat turn to memory for session %s", session_id)
-    try:
-        _append_chat_audit_log(
-            question=question,
-            answer=response.answer,
-            settings=settings,
-        )
-    except Exception:
-        logger.exception("Failed to append chat audit log for session %s", session_id)
+    if audit:
+        try:
+            _append_chat_audit_log(
+                question=question,
+                answer=response.answer,
+                settings=settings,
+            )
+        except Exception:
+            logger.exception("Failed to append chat audit log for session %s", session_id)
     return response
 
 

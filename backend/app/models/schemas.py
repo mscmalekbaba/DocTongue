@@ -71,22 +71,9 @@ class ChatRequest(BaseModel):
     )
 
 
-class QualityControlResult(BaseModel):
-    """Optional quality evaluation result attached to a chat response."""
-
-    score: float = Field(ge=0.0, le=1.0, description="Quality score in the range [0, 1].")
-    passed: bool = Field(description="Whether the score met the configured quality threshold.")
-    method: str = Field(description="Identifier for the evaluation method used (e.g. 'deepeval.answer_relevancy').")
-    reason: str | None = Field(default=None, description="Optional human-readable explanation from the judge model.")
-
-
 class ChatResponse(BaseModel):
     """Response body for POST /api/chat."""
 
     answer: str = Field(description="Generated answer text, which may contain [N] citation markers.")
     citations: list[Citation] = Field(description="Document excerpts used to ground the answer.")
     grounded: bool = Field(description="True when the answer is supported by at least one retrieved excerpt.")
-    quality_control: QualityControlResult | None = Field(
-        default=None,
-        description="Quality evaluation result when quality control is enabled, otherwise null.",
-    )

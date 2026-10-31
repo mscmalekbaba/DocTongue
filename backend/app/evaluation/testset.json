@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "corpus": [
+    { "document_id": "eval-shield-basic", "filename": "shield_basic.pdf" },
+    { "document_id": "eval-shield-standard", "filename": "shield_standard.pdf" },
+    { "document_id": "eval-shield-premium", "filename": "shield_premium.pdf" },
+    { "document_id": "eval-shield-comparison", "filename": "shield_plan_comparison.pdf" }
+  ],
+  "cases": [
+    {
+      "id": "basic-monthly-premium",
+      "question": "What is the monthly premium for the Basic plan?",
+      "expected_answer": "The Basic plan costs £24 per month per insured adult.",
+      "expected_sources": ["eval-shield-basic", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["confusable", "value-lookup"]
+    },
+    {
+      "id": "standard-deductible",
+      "question": "What is the annual deductible on the Standard plan?",
+      "expected_answer": "The Standard plan has an annual deductible of £750.",
+      "expected_sources": ["eval-shield-standard", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["confusable", "value-lookup"]
+    },
+    {
+      "id": "basic-deductible",
+      "question": "How much is the annual deductible for the Basic plan?",
+      "expected_answer": "The Basic plan has an annual deductible of £1,500.",
+      "expected_sources": ["eval-shield-basic", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["confusable", "value-lookup"]
+    },
+    {
+      "id": "premium-coverage-ceiling",
+      "question": "What is the annual coverage ceiling on the Premium plan?",
+      "expected_answer": "The Premium plan pays a maximum of £1,000,000 per policy year.",
+      "expected_sources": ["eval-shield-premium", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["confusable", "value-lookup"]
+    },
+    {
+      "id": "premium-monthly-cost",
+      "question": "What does the Premium plan cost per month?",
+      "expected_answer": "The Premium plan costs £95 per month per insured adult.",
+      "expected_sources": ["eval-shield-premium", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["confusable", "value-lookup"]
+    },
+    {
+      "id": "standard-excess-per-claim",
+      "question": "What excess applies to each claim on the Standard plan?",
+      "expected_answer": "An excess of £40 applies to each separate claim on the Standard plan, in addition to the annual deductible.",
+      "expected_sources": ["eval-shield-standard", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["confusable", "value-lookup"]
+    },
+    {
+      "id": "cross-dental-cover",
+      "question": "Which ShieldCare plans include dental cover?",
+      "expected_answer": "Dental treatment is included on the Standard and Premium plans, and is not included on the Basic plan.",
+      "expected_sources": ["eval-shield-standard", "eval-shield-premium", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["cross-document", "multi-citation"]
+    },
+    {
+      "id": "cross-waiting-periods",
+      "question": "How do the waiting periods compare across the three plans?",
+      "expected_answer": "The waiting period is 90 days on Basic, 30 days on Standard and 14 days on Premium.",
+      "expected_sources": ["eval-shield-basic", "eval-shield-standard", "eval-shield-premium", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["cross-document", "multi-citation"]
+    },
+    {
+      "id": "table-physiotherapy-premium",
+      "question": "How many physiotherapy sessions per year does the Premium plan cover?",
+      "expected_answer": "The Premium plan covers 24 physiotherapy sessions per year, subject to GP referral.",
+      "expected_sources": ["eval-shield-premium", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["table", "value-lookup"]
+    },
+    {
+      "id": "table-out-of-network-standard",
+      "question": "What out-of-network reimbursement rate applies to the Standard plan?",
+      "expected_answer": "Treatment outside the provider network is reimbursed at 60% of the eligible cost on the Standard plan.",
+      "expected_sources": ["eval-shield-standard", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["table", "value-lookup"]
+    },
+    {
+      "id": "table-annual-health-assessment",
+      "question": "Which plan includes an annual health assessment?",
+      "expected_answer": "Only the Premium plan includes an annual health assessment.",
+      "expected_sources": ["eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["table", "comparison-only"]
+    },
+    {
+      "id": "paraphrase-claim-window",
+      "question": "If I have treatment on the mid-tier policy, how long do I have to send in the paperwork?",
+      "expected_answer": "On the Standard plan, claims must be submitted within 60 days of the date of treatment.",
+      "expected_sources": ["eval-shield-standard", "eval-shield-comparison"],
+      "expected_refusal": false,
+      "tags": ["paraphrase"]
+    },
+    {
+      "id": "negative-platinum-plan",
+      "question": "What is the monthly premium for the Platinum plan?",
+      "expected_answer": "The indexed documents do not describe a Platinum plan, so this cannot be answered from them.",
+      "expected_sources": [],
+      "expected_refusal": true,
+      "tags": ["negative", "nonexistent-entity"]
+    },
+    {
+      "id": "negative-pet-insurance",
+      "question": "Does ShieldCare offer a discount for bundling pet insurance?",
+      "expected_answer": "The indexed documents say nothing about pet insurance or bundling discounts.",
+      "expected_sources": [],
+      "expected_refusal": true,
+      "tags": ["negative"]
+    },
+    {
+      "id": "negative-chief-medical-officer",
+      "question": "Who is the chief medical officer of ShieldCare?",
+      "expected_answer": "The indexed documents do not name any ShieldCare personnel.",
+      "expected_sources": [],
+      "expected_refusal": true,
+      "tags": ["negative"]
+    }
+  ]
+}

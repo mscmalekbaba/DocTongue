@@ -1,0 +1,922 @@
+{
+  "run_id": "20261031T203622Z-1feba7",
+  "started_at": "2026-10-31T20:36:22.807841Z",
+  "finished_at": "2026-10-31T20:42:42.376253Z",
+  "status": "completed",
+  "testset_version": 1,
+  "config": {
+    "retrieval_k": 5,
+    "chunk_size": 900,
+    "chunk_overlap": 150,
+    "max_answer_citations": 3,
+    "embedding_provider": "openrouter",
+    "embedding_model": "nvidia/nemotron-3.5-embed-1b:free",
+    "llm_provider": "openrouter",
+    "llm_model": "nvidia/nemotron-3.5-super-vl:free",
+    "judge_enabled": true,
+    "judge_model": "openai/gpt-4o-mini",
+    "eval_threshold": 0.5
+  },
+  "aggregates": {
+    "case_count": 15,
+    "errored_cases": 0,
+    "source_hit_rate": 1.0,
+    "mean_reciprocal_rank": 1.0,
+    "refusal_accuracy": 1.0,
+    "grounded_rate": 1.0,
+    "mean_latency_seconds": 3.3259,
+    "judge_means": {
+      "answer_relevancy": 0.8542,
+      "faithfulness": 0.8958,
+      "contextual_precision": 1.0,
+      "contextual_recall": 1.0
+    }
+  },
+  "cases": [
+    {
+      "case_id": "basic-monthly-premium",
+      "question": "What is the monthly premium for the Basic plan?",
+      "expected_answer": "The Basic plan costs £24 per month per insured adult.",
+      "answer": "The monthly premium for the Basic plan is £24 per insured adult [1][2].",
+      "contexts": [
+        "ShieldCare Health Insurance - Basic Plan Policy summary document. Policy reference SC-BAS-2025. Effective from 1 January 2025 until 31 December 2025. This summary is issued by ShieldCare Insurance Services Limited, a fictional entity used for evaluation purposes only. 1. Monthly premium The monthly premium for the Basic plan is £24 per insured adult. Premiums are collected by direct debit on the first working day of each month. 2. Annual deductible The Basic plan carries an annual deductible of £1,500. The deductible applies once per policy year across all eligible claims, and must be met before ShieldCare begins to reimburse treatment costs. 3. Annual coverage ceiling The maximum amount payable under the Basic plan is £50,000 per policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Basic plan must be submitted",
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 2,
+        "cited_sources": [
+          "eval-shield-basic",
+          "eval-shield-comparison"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the response directly addresses the question about the monthly premium for the Basic plan without any irrelevant statements."
+        },
+        {
+          "name": "faithfulness",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because there are no contradictions, indicating that the actual output perfectly aligns with the retrieval context."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the first node directly answers the question about the monthly premium for the Basic plan, stating that 'The monthly premium for the Basic plan is £24 per insured adult.' The second node, ranked lower, does not provide relevant information, as it only offers a comparison of plans without addressing the specific query."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence directly matches the information provided in the first node of the retrieval context, confirming its accuracy."
+        }
+      ],
+      "latency_seconds": 2.757,
+      "tags": [
+        "confusable",
+        "value-lookup"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "standard-deductible",
+      "question": "What is the annual deductible on the Standard plan?",
+      "expected_answer": "The Standard plan has an annual deductible of £750.",
+      "answer": "The annual deductible on the Standard plan is £750.[1][2]",
+      "contexts": [
+        "ShieldCare Health Insurance - Standard Plan Policy summary document. Policy reference SC-STD-2025. Effective from 1 January 2025 until 31 December 2025. This summary is issued by ShieldCare Insurance Services Limited, a fictional entity used for evaluation purposes only. 1. Monthly premium The monthly premium for the Standard plan is £48 per insured adult. Premiums are collected by direct debit on the first working day of each month. 2. Annual deductible The Standard plan carries an annual deductible of £750. The deductible applies once per policy year across all eligible claims, and must be met before ShieldCare begins to reimburse treatment costs. 3. Annual coverage ceiling The maximum amount payable under the Standard plan is £250,000 per policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Standard plan must",
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 2,
+        "cited_sources": [
+          "eval-shield-standard",
+          "eval-shield-comparison"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the response directly addressed the question about the annual deductible on the Standard plan without any irrelevant statements."
+        },
+        {
+          "name": "faithfulness",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because there are no contradictions, indicating that the actual output perfectly aligns with the retrieval context."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because all relevant nodes provide direct answers to the question about the annual deductible on the Standard plan. The first node states, 'The Standard plan carries an annual deductible of £750,' which directly answers the question, while the second node confirms this with additional verification, ensuring that there are no irrelevant nodes to detract from the score."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence directly matches the information provided in the 1st node of the retrieval context."
+        }
+      ],
+      "latency_seconds": 3.685,
+      "tags": [
+        "confusable",
+        "value-lookup"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "basic-deductible",
+      "question": "How much is the annual deductible for the Basic plan?",
+      "expected_answer": "The Basic plan has an annual deductible of £1,500.",
+      "answer": "The annual deductible for the Basic plan is £1,500 [1][2].",
+      "contexts": [
+        "ShieldCare Health Insurance - Basic Plan Policy summary document. Policy reference SC-BAS-2025. Effective from 1 January 2025 until 31 December 2025. This summary is issued by ShieldCare Insurance Services Limited, a fictional entity used for evaluation purposes only. 1. Monthly premium The monthly premium for the Basic plan is £24 per insured adult. Premiums are collected by direct debit on the first working day of each month. 2. Annual deductible The Basic plan carries an annual deductible of £1,500. The deductible applies once per policy year across all eligible claims, and must be met before ShieldCare begins to reimburse treatment costs. 3. Annual coverage ceiling The maximum amount payable under the Basic plan is £50,000 per policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Basic plan must be submitted",
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 2,
+        "cited_sources": [
+          "eval-shield-basic",
+          "eval-shield-comparison"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the response directly addressed the question about the annual deductible for the Basic plan without any irrelevant statements."
+        },
+        {
+          "name": "faithfulness",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because there are no contradictions, indicating that the actual output perfectly aligns with the retrieval context."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the first node directly answers the question with relevant information, while the second node, despite providing useful context, does not specifically address the annual deductible for the Basic plan, making it less relevant."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence directly matches the information provided in the first node of the retrieval context, confirming its accuracy."
+        }
+      ],
+      "latency_seconds": 1.986,
+      "tags": [
+        "confusable",
+        "value-lookup"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "premium-coverage-ceiling",
+      "question": "What is the annual coverage ceiling on the Premium plan?",
+      "expected_answer": "The Premium plan pays a maximum of £1,000,000 per policy year.",
+      "answer": "The annual coverage ceiling on the Premium plan is £1,000,000 per policy year [1]. This is also reflected in the ShieldCare Plan Comparison 2025 table, which lists the Premium plan's annual coverage ceiling as £1,000,000 [2].",
+      "contexts": [
+        "ShieldCare Health Insurance - Premium Plan Policy summary document. Policy reference SC-PRM-2025. Effective from 1 January 2025 until 31 December 2025. This summary is issued by ShieldCare Insurance Services Limited, a fictional entity used for evaluation purposes only. 1. Monthly premium The monthly premium for the Premium plan is £95 per insured adult. Premiums are collected by direct debit on the first working day of each month. 2. Annual deductible The Premium plan carries an annual deductible of £250. The deductible applies once per policy year across all eligible claims, and must be met before ShieldCare begins to reimburse treatment costs. 3. Annual coverage ceiling The maximum amount payable under the Premium plan is £1,000,000 per policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Premium plan must be",
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 2,
+        "cited_sources": [
+          "eval-shield-premium",
+          "eval-shield-comparison"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the response directly addresses the question about the annual coverage ceiling on the Premium plan without any irrelevant statements."
+        },
+        {
+          "name": "faithfulness",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because there are no contradictions, indicating that the actual output perfectly aligns with the retrieval context."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because all relevant nodes are ranked higher than any irrelevant nodes, ensuring that the most pertinent information is prioritized. The first node provides a direct answer stating, 'The maximum amount payable under the Premium plan is £1,000,000 per policy year,' while the second node reinforces this with a comparison table confirming the same amount, making the retrieval highly effective."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence directly aligns with the information provided in the 1st node in retrieval context, confirming the maximum payout of the Premium plan."
+        }
+      ],
+      "latency_seconds": 2.647,
+      "tags": [
+        "confusable",
+        "value-lookup"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "premium-monthly-cost",
+      "question": "What does the Premium plan cost per month?",
+      "expected_answer": "The Premium plan costs £95 per month per insured adult.",
+      "answer": "The Premium plan costs £95 per month per insured adult [1]. This is also confirmed in the ShieldCare Plan Comparison 2025 table, which lists the Premium monthly premium as £95 [2].",
+      "contexts": [
+        "ShieldCare Health Insurance - Premium Plan Policy summary document. Policy reference SC-PRM-2025. Effective from 1 January 2025 until 31 December 2025. This summary is issued by ShieldCare Insurance Services Limited, a fictional entity used for evaluation purposes only. 1. Monthly premium The monthly premium for the Premium plan is £95 per insured adult. Premiums are collected by direct debit on the first working day of each month. 2. Annual deductible The Premium plan carries an annual deductible of £250. The deductible applies once per policy year across all eligible claims, and must be met before ShieldCare begins to reimburse treatment costs. 3. Annual coverage ceiling The maximum amount payable under the Premium plan is £1,000,000 per policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Premium plan must be",
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 2,
+        "cited_sources": [
+          "eval-shield-premium",
+          "eval-shield-comparison"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the response directly addresses the question about the Premium plan's monthly cost without any irrelevant statements."
+        },
+        {
+          "name": "faithfulness",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because there are no contradictions, indicating that the actual output perfectly aligns with the retrieval context."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the relevant nodes provide direct answers to the question about the cost of the Premium plan. Both nodes rank higher and clearly state the monthly premium, ensuring that irrelevant nodes do not interfere with the clarity of the information."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence directly matches the information provided in the 1st node of the retrieval context, confirming its accuracy."
+        }
+      ],
+      "latency_seconds": 1.839,
+      "tags": [
+        "confusable",
+        "value-lookup"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "standard-excess-per-claim",
+      "question": "What excess applies to each claim on the Standard plan?",
+      "expected_answer": "An excess of £40 applies to each separate claim on the Standard plan, in addition to the annual deductible.",
+      "answer": "An excess of £40 applies to each separate claim made under the Standard plan, in addition to the annual deductible [1][2].",
+      "contexts": [
+        "per policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Standard plan must be submitted within 60 days of the date of treatment. Claims received after this window are declined without review. 5. Excess per claim An excess of £40 applies to each separate claim made under the Standard plan, in addition to the annual deductible. 6. Dental cover Routine and restorative dental treatment is included under the Standard plan. 7. Physiotherapy The Standard plan covers 6 physiotherapy sessions per year, subject to referral by a registered general practitioner. 8. Waiting period A waiting period of 30 days applies from the policy start date before non-emergency treatment becomes eligible under the Standard plan. 9. Out-of-network reimbursement Treatment obtained outside the ShieldCare provider network is reimbursed at 60%",
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 2,
+        "cited_sources": [
+          "eval-shield-standard",
+          "eval-shield-comparison"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 0.5,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 0.50 because the output included an irrelevant statement about an annual deductible that did not address the specific question regarding the excess applicable to each claim on the Standard plan."
+        },
+        {
+          "name": "faithfulness",
+          "score": 0.5,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 0.50 because the actual output incorrectly implies that the excess of £40 is an additional cost to the annual deductible, while it is actually a separate charge for each claim made under the Standard plan."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the first node provides a direct answer to the question about the excess on the Standard plan, while the second node does not contain relevant information regarding this topic, thus it is ranked lower."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence perfectly matches the information provided in node 1 of the retrieval context."
+        }
+      ],
+      "latency_seconds": 3.685,
+      "tags": [
+        "confusable",
+        "value-lookup"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "cross-dental-cover",
+      "question": "Which ShieldCare plans include dental cover?",
+      "expected_answer": "Dental treatment is included on the Standard and Premium plans, and is not included on the Basic plan.",
+      "answer": "Based on the ShieldCare Plan Comparison 2025 table, dental cover is included under the **Standard** and **Premium** plans, but not under the Basic plan (Basic: No; Standard: Yes; Premium: Yes) [1]. Source 5 also confirms that routine and restorative dental treatment is included under the Standard plan [2].",
+      "contexts": [
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously",
+        "per policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Standard plan must be submitted within 60 days of the date of treatment. Claims received after this window are declined without review. 5. Excess per claim An excess of £40 applies to each separate claim made under the Standard plan, in addition to the annual deductible. 6. Dental cover Routine and restorative dental treatment is included under the Standard plan. 7. Physiotherapy The Standard plan covers 6 physiotherapy sessions per year, subject to referral by a registered general practitioner. 8. Waiting period A waiting period of 30 days applies from the policy start date before non-emergency treatment becomes eligible under the Standard plan. 9. Out-of-network reimbursement Treatment obtained outside the ShieldCare provider network is reimbursed at 60%"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 2,
+        "cited_sources": [
+          "eval-shield-comparison",
+          "eval-shield-standard"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the response directly addresses the question about ShieldCare plans that include dental cover without any irrelevant statements."
+        },
+        {
+          "name": "faithfulness",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because there are no contradictions, indicating that the actual output perfectly aligns with the retrieval context."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the relevant nodes are ranked higher than the irrelevant nodes, with the first node stating that 'Dental cover No Yes Yes', indicating inclusion in the Standard and Premium plans, and the second node confirming 'Routine and restorative dental treatment is included under the Standard plan'."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence about dental treatment directly aligns with the information provided in node 6, confirming its inclusion in the Standard and Premium plans."
+        }
+      ],
+      "latency_seconds": 5.633,
+      "tags": [
+        "cross-document",
+        "multi-citation"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "cross-waiting-periods",
+      "question": "How do the waiting periods compare across the three plans?",
+      "expected_answer": "The waiting period is 90 days on Basic, 30 days on Standard and 14 days on Premium.",
+      "answer": "The waiting periods differ by tier: the **Basic plan** has the longest waiting period at **90 days**, the **Standard plan** has a **30-day** waiting period, and the **Premium plan** has the shortest at **14 days** [1]. These figures are confirmed in the individual plan summaries: Basic (90 days) [2], Standard (30 days) [3], and Premium (14 days) [3]. In all cases, the waiting period applies from the policy start date before non-emergency treatment becomes eligible [3][2].",
+      "contexts": [
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously",
+        "year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Basic plan must be submitted within 30 days of the date of treatment. Claims received after this window are declined without review. 5. Excess per claim An excess of £75 applies to each separate claim made under the Basic plan, in addition to the annual deductible. 6. Dental cover Routine and restorative dental treatment is not included under the Basic plan. 7. Physiotherapy The Basic plan covers no physiotherapy sessions, subject to referral by a registered general practitioner. 8. Waiting period A waiting period of 90 days applies from the policy start date before non-emergency treatment becomes eligible under the Basic plan. 9. Out-of-network reimbursement Treatment obtained outside the ShieldCare provider network is reimbursed at 40% of the eligible cost under",
+        "per policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Standard plan must be submitted within 60 days of the date of treatment. Claims received after this window are declined without review. 5. Excess per claim An excess of £40 applies to each separate claim made under the Standard plan, in addition to the annual deductible. 6. Dental cover Routine and restorative dental treatment is included under the Standard plan. 7. Physiotherapy The Standard plan covers 6 physiotherapy sessions per year, subject to referral by a registered general practitioner. 8. Waiting period A waiting period of 30 days applies from the policy start date before non-emergency treatment becomes eligible under the Standard plan. 9. Out-of-network reimbursement Treatment obtained outside the ShieldCare provider network is reimbursed at 60%"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 3,
+        "cited_sources": [
+          "eval-shield-comparison",
+          "eval-shield-basic",
+          "eval-shield-standard"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the response directly addressed the comparison of waiting periods across the three plans without any irrelevant statements."
+        },
+        {
+          "name": "faithfulness",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because there are no contradictions, indicating that the actual output perfectly aligns with the retrieval context."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the first node provides a clear and relevant comparison of waiting periods, while the subsequent nodes discuss unrelated topics such as claim submission windows, which are ranked lower due to their lack of relevance."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence perfectly aligns with the information provided in node 1 of the retrieval context, clearly detailing the waiting periods for each plan."
+        }
+      ],
+      "latency_seconds": 3.379,
+      "tags": [
+        "cross-document",
+        "multi-citation"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "table-physiotherapy-premium",
+      "question": "How many physiotherapy sessions per year does the Premium plan cover?",
+      "expected_answer": "The Premium plan covers 24 physiotherapy sessions per year, subject to GP referral.",
+      "answer": "The Premium plan covers 24 physiotherapy sessions per year, subject to referral by a registered general practitioner [1][2].",
+      "contexts": [
+        "r policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Premium plan must be submitted within 90 days of the date of treatment. Claims received after this window are declined without review. 5. Excess per claim An excess of £10 applies to each separate claim made under the Premium plan, in addition to the annual deductible. 6. Dental cover Routine and restorative dental treatment is included under the Premium plan. 7. Physiotherapy The Premium plan covers 24 physiotherapy sessions per year, subject to referral by a registered general practitioner. 8. Waiting period A waiting period of 14 days applies from the policy start date before non-emergency treatment becomes eligible under the Premium plan. 9. Out-of-network reimbursement Treatment obtained outside the ShieldCare provider network is reimbursed at 80% of the",
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 2,
+        "cited_sources": [
+          "eval-shield-premium",
+          "eval-shield-comparison"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 0.5,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 0.50 because the output included irrelevant information about coverage conditions instead of directly addressing the number of sessions covered by the Premium plan."
+        },
+        {
+          "name": "faithfulness",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because there are no contradictions, indicating that the actual output perfectly aligns with the retrieval context."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the first node directly answers the question about the Premium plan's coverage of physiotherapy sessions, while the second node, despite being informative, does not provide the specific information needed, thus it is ranked lower."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence directly matches the information provided in the first node of the retrieval context."
+        }
+      ],
+      "latency_seconds": 4.001,
+      "tags": [
+        "table",
+        "value-lookup"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "table-out-of-network-standard",
+      "question": "What out-of-network reimbursement rate applies to the Standard plan?",
+      "expected_answer": "Treatment outside the provider network is reimbursed at 60% of the eligible cost on the Standard plan.",
+      "answer": "The out-of-network reimbursement rate for the Standard plan is 60% of the eligible cost [1].",
+      "contexts": [
+        "omes eligible under the Standard plan. 9. Out-of-network reimbursement Treatment obtained outside the ShieldCare provider network is reimbursed at 60% of the eligible cost under the Standard plan."
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 1,
+        "cited_sources": [
+          "eval-shield-standard"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the response directly addresses the question about the out-of-network reimbursement rate for the Standard plan without any irrelevant statements."
+        },
+        {
+          "name": "faithfulness",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because there are no contradictions, indicating that the actual output perfectly aligns with the retrieval context."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the relevant node provides a clear and direct answer to the question regarding the out-of-network reimbursement rate, stating that 'Treatment obtained outside the ShieldCare provider network is reimbursed at 60% of the eligible cost under the Standard plan.' There are no irrelevant nodes present to detract from the score."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence directly aligns with the information provided in the 1st node of the retrieval context, confirming the accuracy of the expected output."
+        }
+      ],
+      "latency_seconds": 3.515,
+      "tags": [
+        "table",
+        "value-lookup"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "table-annual-health-assessment",
+      "question": "Which plan includes an annual health assessment?",
+      "expected_answer": "Only the Premium plan includes an annual health assessment.",
+      "answer": "The Premium plan includes an annual health assessment. According to the ShieldCare Plan Comparison 2025 table, the Annual health assessment feature is listed as \"No\" for Basic, \"No\" for Standard, and \"Yes\" for Premium [1].",
+      "contexts": [
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 1,
+        "cited_sources": [
+          "eval-shield-comparison"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 0.5,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 0.50 because the output included repeated irrelevant statements that did not address the question about plans including an annual health assessment."
+        },
+        {
+          "name": "faithfulness",
+          "score": 0.5,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 0.50 because the actual output incorrectly claims that the Annual health assessment feature is listed as 'No' for Standard, which contradicts the retrieval context that specifies it does not include an annual health assessment."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the relevant node provides a clear and direct answer to the question, stating that 'Only the Premium plan includes an annual health assessment.' There are no irrelevant nodes present to affect the ranking."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence directly aligns with the information in node 1 regarding the Premium plan's inclusion of an annual health assessment."
+        }
+      ],
+      "latency_seconds": 2.436,
+      "tags": [
+        "table",
+        "comparison-only"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "paraphrase-claim-window",
+      "question": "If I have treatment on the mid-tier policy, how long do I have to send in the paperwork?",
+      "expected_answer": "On the Standard plan, claims must be submitted within 60 days of the date of treatment.",
+      "answer": "You have 60 days from the date of treatment to submit the paperwork. The mid-tier policy is the Standard plan, and its claim submission window is 60 days; claims received after this window are declined without review [1][2].",
+      "contexts": [
+        "per policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Standard plan must be submitted within 60 days of the date of treatment. Claims received after this window are declined without review. 5. Excess per claim An excess of £40 applies to each separate claim made under the Standard plan, in addition to the annual deductible. 6. Dental cover Routine and restorative dental treatment is included under the Standard plan. 7. Physiotherapy The Standard plan covers 6 physiotherapy sessions per year, subject to referral by a registered general practitioner. 8. Waiting period A waiting period of 30 days applies from the policy start date before non-emergency treatment becomes eligible under the Standard plan. 9. Out-of-network reimbursement Treatment obtained outside the ShieldCare provider network is reimbursed at 60%",
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously"
+      ],
+      "retrieval": {
+        "source_hit": true,
+        "first_hit_rank": 1,
+        "reciprocal_rank": 1.0,
+        "refused": false,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 2,
+        "cited_sources": [
+          "eval-shield-standard",
+          "eval-shield-comparison"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": 0.75,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 0.75 because the response included information about the type of policy, which was not relevant to the question about paperwork submission."
+        },
+        {
+          "name": "faithfulness",
+          "score": 0.75,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 0.75 because the actual output incorrectly assumes the Standard plan is the mid-tier option, while the retrieval context does not explicitly define the mid-tier policy."
+        },
+        {
+          "name": "contextual_precision",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the first node directly answers the question regarding the paperwork submission timeframe, while the second node, which ranks lower, 'provides a comparison of plan features but does not specifically address the question.' This clear distinction in relevance justifies the high score."
+        },
+        {
+          "name": "contextual_recall",
+          "score": 1.0,
+          "passed": true,
+          "status": "scored",
+          "reason": "The score is 1.00 because the sentence directly matches the information provided in the 1st node in retrieval context, confirming its accuracy."
+        }
+      ],
+      "latency_seconds": 3.687,
+      "tags": [
+        "paraphrase"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "negative-platinum-plan",
+      "question": "What is the monthly premium for the Platinum plan?",
+      "expected_answer": "The indexed documents do not describe a Platinum plan, so this cannot be answered from them.",
+      "answer": "I could not find information about a Platinum plan monthly premium in the indexed documents. The sources only mention Basic, Standard, and Premium plan tiers [1][2].",
+      "contexts": [
+        "ShieldCare Plan Comparison 2025 The table below compares the three ShieldCare plan tiers. Where this table and a plan's own policy summary disagree, the policy summary takes precedence. Feature Basic Standard Premium Monthly premium £24 £48 £95 Annual deductible £1,500 £750 £250 Annual coverage ceiling £50,000 £250,000 £1,000,000 Claim submission window 30 days 60 days 90 days Excess per claim £75 £40 £10 Dental cover No Yes Yes Physiotherapy sessions 0 6 24 Waiting period 90 days 30 days 14 days Out-of-network reimbursement 40% 60% 80% Nurse advice line No Weekdays 24 hours Overseas emergency cover No Yes Yes Annual health assessment No No Yes Switching between plans Members may upgrade to a higher tier at any policy anniversary. A downgrade takes effect at the start of the next policy year. Waiting periods are not reapplied when upgrading, provided the policy has been continuously",
+        "ShieldCare Health Insurance - Premium Plan Policy summary document. Policy reference SC-PRM-2025. Effective from 1 January 2025 until 31 December 2025. This summary is issued by ShieldCare Insurance Services Limited, a fictional entity used for evaluation purposes only. 1. Monthly premium The monthly premium for the Premium plan is £95 per insured adult. Premiums are collected by direct debit on the first working day of each month. 2. Annual deductible The Premium plan carries an annual deductible of £250. The deductible applies once per policy year across all eligible claims, and must be met before ShieldCare begins to reimburse treatment costs. 3. Annual coverage ceiling The maximum amount payable under the Premium plan is £1,000,000 per policy year. Costs above the ceiling remain the responsibility of the policyholder. 4. Claim submission window Claims under the Premium plan must be"
+      ],
+      "retrieval": {
+        "source_hit": false,
+        "first_hit_rank": null,
+        "reciprocal_rank": 0.0,
+        "refused": true,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 2,
+        "cited_sources": [
+          "eval-shield-comparison",
+          "eval-shield-premium"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        },
+        {
+          "name": "faithfulness",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        },
+        {
+          "name": "contextual_precision",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        },
+        {
+          "name": "contextual_recall",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        }
+      ],
+      "latency_seconds": 2.553,
+      "tags": [
+        "negative",
+        "nonexistent-entity"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "negative-pet-insurance",
+      "question": "Does ShieldCare offer a discount for bundling pet insurance?",
+      "expected_answer": "The indexed documents say nothing about pet insurance or bundling discounts.",
+      "answer": "I could not find any mention of pet insurance or bundling discounts in the provided ShieldCare documents. The sources cover plan tiers, coverage features, exclusions, and cancellation policies, but none reference pet insurance or bundle discounts.",
+      "contexts": [
+        "10. Nurse advice line The ShieldCare nurse advice line is available on weekdays to Standard plan members. 11. Exclusions The following are excluded from all ShieldCare plans: experimental treatment not approved by a national regulator, injuries sustained during professional sport, and treatment arising from a declared act of war. 12. Cancellation Policyholders may cancel within 14 days of the policy start date for a full refund. After 14 days, a pro-rata refund is issued less any claims already paid.",
+        "10. Nurse advice line The ShieldCare nurse advice line is available 24 hours a day to Premium plan members. 11. Exclusions The following are excluded from all ShieldCare plans: experimental treatment not approved by a national regulator, injuries sustained during professional sport, and treatment arising from a declared act of war. 12. Cancellation Policyholders may cancel within 14 days of the policy start date for a full refund. After 14 days, a pro-rata refund is issued less any claims already paid.",
+        "10. Nurse advice line The ShieldCare nurse advice line is not available to Basic plan members. 11. Exclusions The following are excluded from all ShieldCare plans: experimental treatment not approved by a national regulator, injuries sustained during professional sport, and treatment arising from a declared act of war. 12. Cancellation Policyholders may cancel within 14 days of the policy start date for a full refund. After 14 days, a pro-rata refund is issued less any claims already paid."
+      ],
+      "retrieval": {
+        "source_hit": false,
+        "first_hit_rank": null,
+        "reciprocal_rank": 0.0,
+        "refused": true,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 3,
+        "cited_sources": [
+          "eval-shield-standard",
+          "eval-shield-premium",
+          "eval-shield-basic"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        },
+        {
+          "name": "faithfulness",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        },
+        {
+          "name": "contextual_precision",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        },
+        {
+          "name": "contextual_recall",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        }
+      ],
+      "latency_seconds": 4.045,
+      "tags": [
+        "negative"
+      ],
+      "error": null
+    },
+    {
+      "case_id": "negative-chief-medical-officer",
+      "question": "Who is the chief medical officer of ShieldCare?",
+      "expected_answer": "The indexed documents do not name any ShieldCare personnel.",
+      "answer": "I could not find the name of ShieldCare's chief medical officer in the provided document excerpts. None of the sources mention a chief medical officer or any executive leadership personnel.",
+      "contexts": [
+        "10. Nurse advice line The ShieldCare nurse advice line is available 24 hours a day to Premium plan members. 11. Exclusions The following are excluded from all ShieldCare plans: experimental treatment not approved by a national regulator, injuries sustained during professional sport, and treatment arising from a declared act of war. 12. Cancellation Policyholders may cancel within 14 days of the policy start date for a full refund. After 14 days, a pro-rata refund is issued less any claims already paid.",
+        "10. Nurse advice line The ShieldCare nurse advice line is available on weekdays to Standard plan members. 11. Exclusions The following are excluded from all ShieldCare plans: experimental treatment not approved by a national regulator, injuries sustained during professional sport, and treatment arising from a declared act of war. 12. Cancellation Policyholders may cancel within 14 days of the policy start date for a full refund. After 14 days, a pro-rata refund is issued less any claims already paid.",
+        "10. Nurse advice line The ShieldCare nurse advice line is not available to Basic plan members. 11. Exclusions The following are excluded from all ShieldCare plans: experimental treatment not approved by a national regulator, injuries sustained during professional sport, and treatment arising from a declared act of war. 12. Cancellation Policyholders may cancel within 14 days of the policy start date for a full refund. After 14 days, a pro-rata refund is issued less any claims already paid."
+      ],
+      "retrieval": {
+        "source_hit": false,
+        "first_hit_rank": null,
+        "reciprocal_rank": 0.0,
+        "refused": true,
+        "refusal_correct": true,
+        "grounded": true,
+        "citation_count": 3,
+        "cited_sources": [
+          "eval-shield-premium",
+          "eval-shield-standard",
+          "eval-shield-basic"
+        ]
+      },
+      "judge": [
+        {
+          "name": "answer_relevancy",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        },
+        {
+          "name": "faithfulness",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        },
+        {
+          "name": "contextual_precision",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        },
+        {
+          "name": "contextual_recall",
+          "score": null,
+          "passed": null,
+          "status": "skipped",
+          "reason": "Negative case; correctness captured by refusal_correct."
+        }
+      ],
+      "latency_seconds": 4.04,
+      "tags": [
+        "negative"
+      ],
+      "error": null
+    }
+  ],
+  "error": null
+}

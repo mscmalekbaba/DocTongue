@@ -47,10 +47,23 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.1
     llm_timeout_seconds: float = 60.0
     max_answer_citations: int = 3
-    quality_control_enabled: bool = False
-    quality_control_threshold: float = 0.5
-    quality_control_fail_open: bool = True
-    quality_control_include_reason: bool = True
+    # Offline evaluation harness (see app/evaluation). These configure the
+    # test-set run, not the chat request path, which carries no judge.
+    eval_testset_path: Path | None = None
+    eval_corpus_dir: Path | None = None
+    eval_results_dir: Path | None = None
+    # Chroma collection used only by evaluation runs, kept separate so a run
+    # never touches the collection serving uploaded documents.
+    eval_collection_name: str = "documents_eval"
+    eval_threshold: float = 0.5
+    # LLM-as-judge metrics are opt-in: they cost roughly 8 API calls per case
+    # and are ~85% of a run's token spend.
+    eval_judge_enabled: bool = False
+    # An OpenRouter slug, like llm_model: judge calls go through the same
+    # client. Kept a separate setting so the judge can be pinned independently
+    # of the answering model.
+    eval_judge_model: str = "nvidia/nemotron-3.5-super-vl:free"
+    eval_judge_max_retries: int = 2
     chat_memory_window: int = 3
     chat_memory_ttl_seconds: int = 3600
     redis_url: str = "redis://localhost:6379/0"
@@ -83,6 +96,13 @@ class Settings(BaseSettings):
             self.chroma_dir = self.storage_root / "chroma"
         if self.documents_manifest is None:
             self.documents_manifest = self.storage_root / "documents.json"
+        evaluation_package = Path(__file__).resolve().parents[1] / "evaluation"
+        if self.eval_testset_path is None:
+            self.eval_testset_path = evaluation_package / "testset.json"
+        if self.eval_corpus_dir is None:
+            self.eval_corpus_dir = evaluation_package / "corpus"
+        if self.eval_results_dir is None:
+            self.eval_results_dir = self.storage_root / "evaluations"
 
     def ensure_storage(self) -> None:
         self.storage_root.mkdir(parents=True, exist_ok=True)
